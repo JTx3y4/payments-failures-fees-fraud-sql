@@ -10,7 +10,7 @@ Cross-border payments fail about twice as often as domestic payments (about 12% 
 
 I used a velocity rule of 5 transactions in 5 minutes that flagged 20 customers who accounted for all 132 fraud-labeled transactions and had a total of about NT$288,000 in chargebacks.
 
-I used a generator script written with the help of Claude AI to create the data and plant patterns. As a result, the findings show my analytics method rather than actual rates.
+I used a generator script written with the help of AI to create the data and plant patterns. As a result, the findings show my method rather than actual rates.
 
 ## Business Questions
 
@@ -24,7 +24,7 @@ I used a generator script written with the help of Claude AI to create the data 
 ## Definitions
 
 - **Cross-border:** the customer's country is different from the merchant's country.
-- **Velocity:** 5 or more transactions by one customer within 5 minutes (then retested at 2 minutes).
+- **Velocity:** 5 or more transactions by one customer within 5 minutes and then retested at 2 minutes.
 - **Failed value (revenue at risk):** the TWD value of payments that failed. The merchant did not get paid.
 - **Cost:** fees paid on successful payments.
 - **Loss:** chargeback value.
@@ -40,11 +40,11 @@ I used a generator script written with the help of Claude AI to create the data 
 | `merchants` | dimension | one merchant |
 | `exchange_rates` | lookup | one currency on one day |
 
-`transactions` points to `customers` and `merchants` with foreign keys. `exchange_rates` has no foreign key because a currency repeats every day, so it cannot be unique. It is joined to `transactions` on currency and date.
+`transactions` points to `customers` and `merchants` with foreign keys. `exchange_rates` has no foreign key from transactions. The exchange rate is identified by currency plus date, and transactions stores a timestamp, so the two are joined on currency and DATE(transaction_time).
 
 ## Data Generation
 
-Python generated the data: 1,000 customers, 50 merchants, 50,132 transactions over 12 months (Nov 2025 to Nov 2026), and daily exchange rates for TWD, USD, and JPY. The generator script was written with AI assistance; I designed the schema and business questions, then cleaned, loaded, and analyzed the data myself. The generator planted six patterns by AI so each of my questions has something to find:
+Python generated the data: 1,000 customers, 50 merchants, 50,132 transactions over 12 months (Nov 2025 to Nov 2026), and daily exchange rates for TWD, USD, and JPY. I used AI to help with the The generator script. I designed the schema and business questions, then cleaned, loaded, and analyzed the data myself. The generator planted six patterns so each of my questions has something to find:
 
 1. Failure rates differ by payment method.
 2. Cross-border payments fail more often.
@@ -127,7 +127,7 @@ JOIN merchants m ON m.merchant_id = t.merchant_id
 GROUP BY c.customer_country,
          CASE WHEN c.customer_country = m.merchant_country THEN 'domestic'
               ELSE 'cross-border' END
-ORDER BY failure_rate DESC;
+ORDER BY c.customer_country, transaction_type;
 ```
 
 **Result:**
@@ -144,7 +144,7 @@ ORDER BY failure_rate DESC;
 **Findings:**
 
 - In every country, the cross-border failure rate is about **double** the domestic failure rate.
-- Japan's domestic failure rate is about 1 percentage point lower than Taiwan's and the USA's. I treat this as normal random variation, not a real difference.
+- Japan's domestic failure rate is about 1.2 to 1.3 percentage point lower than Taiwan's and the USA's. I view  this as normal random variation and not a significant difference.
 
 ### Q3. Do customers who make many transactions within minutes show more fraud and chargebacks?
 
@@ -387,11 +387,11 @@ ORDER BY customer_country, rnk;
 
 - Four merchants are in the top 5 of all three countries: Northern Pharmacy, Theresa's Goods, Theresa's Mart, and Trust Fashion. The same few merchants dominate everywhere. The generator gave some merchants more traffic than others, regardless of customer country.
 - Revenue at risk differs a lot between the top merchants. In Japan, failed value as a share of successful value is 13.8% for Northern Pharmacy, 13.3% for Trust Fashion, 12.4% for Theresa's Goods, 6.0% for Theresa's Mart, and 4.4% for Sunset Goods.
-- The two lowest ratios belong to Sunset Goods and Theresa's Mart, which are both Japan-based merchants. Domestic payments fail less (Q2), so the pattern shows up again at the merchant level.
+- The two lowest ratios belong to Sunset Goods and Theresa's Mart, which are both Japan-based merchants (checked in the merchants table). That fits the domestic vs. cross-border gap in Q2, though I did not check the other three merchants' countries.
 
 ## Limitations
 
-- The data is simulated. Patterns were planted on purpose, so the findings show that the SQL can find them, not how a real payments company behaves.
+- The data is simulated and I made the AI generate patterns so I could use SQL to find them. 
 - Payment retries are not modeled. A failed payment followed by a successful retry looks like one failure and one success.
 - Exchange rates are a simple daily random walk, not real market rates.
 - The fraud bursts were planted within 4 minutes, so the 5-minute rule catching all of them is built in, and the data has no legitimate fast buyers, so false alarms from a wider window are not tested.
