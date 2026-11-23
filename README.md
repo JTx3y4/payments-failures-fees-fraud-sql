@@ -401,10 +401,3 @@ ORDER BY customer_country, rnk;
 ## Tools
 
 Python (pandas, SQLAlchemy), PostgreSQL, pgAdmin, dbdiagram.io.
-
-## Status
-
-- [x] Schema and ER diagram
-- [x] Data generation, cleaning, and load (1,000 customers, 50 merchants, 50,132 transactions, 1,098 exchange rates)
-- [x] Q1 to Q6
-- [ ] Final write-up and charts
