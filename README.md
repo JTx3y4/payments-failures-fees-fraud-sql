@@ -44,7 +44,7 @@ I used a generator script written with the help of AI to create the data and pla
 
 ## Data Generation
 
-Python generated the data: 1,000 customers, 50 merchants, 50,132 transactions over 12 months (Nov 2025 to Oct 2026), and daily exchange rates for TWD, USD, and JPY. I used AI to help with the The generator script. I designed the schema and business questions, then cleaned, loaded, and analyzed the data myself. The generator planted six patterns so each of my questions has something to find:
+Python generated the data: 1,000 customers, 50 merchants, 50,132 transactions over 12 months (Nov 2025 to Oct 2026), and daily exchange rates for TWD, USD, and JPY. I used AI to help with the generator script. I designed the schema and business questions, then cleaned, loaded, and analyzed the data myself. The generator planted six patterns so each of my questions has something to find:
 
 1. Failure rates differ by payment method.
 2. Cross-border payments fail more often.
